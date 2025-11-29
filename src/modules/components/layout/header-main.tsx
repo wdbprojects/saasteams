@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import Link from "next/link";
 import SignOutButton from "@/modules/components/auth/sign-out-button";
+import { Badge } from "@/components/ui/badge";
 
 const HeaderMain = async () => {
   const session = await auth.api.getSession({
@@ -25,9 +26,17 @@ const HeaderMain = async () => {
             </h6>
           </Link>
         </div>
+
+        {/* USER ROLE */}
+        {session && (
+          <div className="flex flex-1 items-center justify-end gap-2">
+            <span>Signed in as: </span>
+            <Badge variant="default">{session?.user.role}</Badge>
+          </div>
+        )}
+
         {/* //INFO: BUTTONS & AUTH */}
         <div className="flex flex-shrink-0 items-center gap-2 p-1">
-          <DarkMode />
           <Button variant="outline" size="sm" asChild>
             <Link href={routes.dashboard}>Dashboard</Link>
           </Button>
@@ -38,6 +47,7 @@ const HeaderMain = async () => {
           ) : (
             <SignOutButton />
           )}
+          <DarkMode />
         </div>
       </div>
     </header>

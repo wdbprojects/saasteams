@@ -1,10 +1,9 @@
 "use client";
 
 import { useTransition } from "react";
-import { useForm } from "react-hook-form";
-import z from "zod";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, LoginSchemaType } from "@/config/types";
+import { useRouter } from "next/navigation";
 
 import {
   Card,
@@ -13,53 +12,46 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+
 import { Input } from "@/components/ui/input";
-import { Loader2, LogIn } from "lucide-react";
+import { CirclePlus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { toast } from "sonner";
-import { signIn } from "@/lib/auth-client";
+import { loginAction } from "@/_actions/auth-actions";
 import { routes } from "@/config/routes";
-import { useRouter } from "next/navigation";
+import { loginSchema, LoginSchemaType } from "@/schemas/auth-schemas";
 
 const LoginForm = () => {
   const [pendingLogin, startLoginTransition] = useTransition();
 
   const router = useRouter();
 
-  const form = useForm<z.infer<LoginSchemaType>>({
+  const form = useForm<LoginSchemaType>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
+    mode: "onBlur",
   });
   const { handleSubmit, control, reset } = form;
 
-  const onSubmit = (values: z.infer<LoginSchemaType>) => {
+  const onSubmit = (values: LoginSchemaType) => {
     startLoginTransition(async () => {
-      const { email, password } = values;
-      await signIn.email(
-        { email: email, password: password },
-        {
-          onRequest: () => {},
-          onResponse: () => {},
-          onError: (ctx) => {
-            toast.error(ctx.error.message);
-          },
-          onSuccess: () => {
-            toast.success("User logged in successfully!");
-            router.push(routes.dashboard);
-          },
-        },
-      );
+      const response = await loginAction(values);
+      if (response.success) {
+        toast.success(response.message);
+        reset();
+        router.push(routes.home);
+      } else {
+        toast.error(response.message);
+      }
     });
   };
 
@@ -73,82 +65,99 @@ const LoginForm = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
+          <form id="register-user" onSubmit={handleSubmit(onSubmit)}>
+            <FieldGroup className="gap-6">
+              {/* EMAIL */}
+              <Controller
                 control={control}
                 name="email"
-                render={({ field }) => {
+                render={({ field, fieldState }) => {
                   return (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your email"
-                          autoComplete="off"
-                          {...field}
+                    <Field className="gap-1">
+                      <FieldLabel htmlFor="email">Email</FieldLabel>
+                      <Input
+                        id="email"
+                        type="text"
+                        placeholder="Enter your email"
+                        autoComplete="off"
+                        aria-invalid={fieldState.invalid}
+                        {...field}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError
+                          errors={[fieldState.error]}
+                          className="text-xs italic"
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                      )}
+                    </Field>
                   );
                 }}
               />
-              <FormField
+              {/* PASSWORD */}
+              <Controller
                 control={control}
                 name="password"
-                render={({ field }) => {
+                render={({ field, fieldState }) => {
                   return (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Enter your password"
-                          autoComplete="off"
-                          {...field}
+                    <Field className="gap-1">
+                      <FieldLabel htmlFor="password">Password</FieldLabel>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        autoComplete="off"
+                        aria-invalid={fieldState.invalid}
+                        {...field}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError
+                          errors={[fieldState.error]}
+                          className="text-xs italic"
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                      )}
+                    </Field>
                   );
                 }}
               />
-              <div className="mt-8 flex w-full flex-row items-center justify-between gap-2">
+            </FieldGroup>
+            {/* ACTIONS */}
+            <FieldGroup className="mt-8 flex w-full flex-col items-center justify-between gap-2">
+              <Button
+                size="default"
+                className="w-full"
+                type="submit"
+                variant="default"
+                form="register-user"
+                disabled={pendingLogin}
+              >
+                {pendingLogin ? (
+                  <div className="flex flex-row items-center justify-center gap-2">
+                    <Loader2 className="size-3.5 animate-spin" />
+                    <span>Pending...</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-row items-center justify-center gap-2">
+                    <CirclePlus className="size-3.5" />
+                    <span>Register</span>
+                  </div>
+                )}
+              </Button>
+              <div className="flex w-full justify-end">
                 <Button
                   size="sm"
-                  className="w-full flex-1"
+                  className="text-xs"
                   type="button"
-                  variant="secondary"
+                  variant="link"
                   disabled={pendingLogin}
                   onClick={() => {
                     reset();
                   }}
                 >
-                  Reset
-                </Button>
-                <Button
-                  size="sm"
-                  className="w-full flex-1 text-white"
-                  type="submit"
-                  variant="default"
-                  disabled={pendingLogin}
-                >
-                  {pendingLogin ? (
-                    <div className="flex flex-row items-center justify-center gap-2">
-                      <Loader2 className="size-3.5 animate-spin" />
-                      <span>Loading...</span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-row items-center justify-center gap-2">
-                      <LogIn className="animage-spin size-3.5" />
-                      <span>Login</span>
-                    </div>
-                  )}
+                  Reset Form
                 </Button>
               </div>
-            </form>
-          </Form>
+            </FieldGroup>
+          </form>
         </CardContent>
       </Card>
     </div>

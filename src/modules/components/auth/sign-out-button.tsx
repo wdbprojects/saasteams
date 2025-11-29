@@ -23,6 +23,7 @@ const SignOutButton = () => {
           onSuccess: () => {
             toast.warning("User signed out successfully");
             router.push(routes.home);
+            router.refresh();
           },
         },
       });

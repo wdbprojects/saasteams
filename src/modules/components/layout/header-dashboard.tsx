@@ -6,6 +6,7 @@ import DarkMode from "@/components/shared/dark-mode";
 import SignOutButton from "@/modules/components/auth/sign-out-button";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import { Badge } from "@/components/ui/badge";
 
 const HeaderDashboard = async () => {
   const session = await auth.api.getSession({
@@ -27,9 +28,16 @@ const HeaderDashboard = async () => {
             </h6>
           </Link>
         </div>
-        {/* //INFO: BUTTONS & AUTH */}
+        {/* USER ROLE */}
+        {session && (
+          <div className="flex flex-1 items-center justify-end gap-2">
+            <span>Signed in as: </span>
+            <Badge variant="default">{session?.user.role}</Badge>
+          </div>
+        )}
+
+        {/* BUTTONS & AUTH */}
         <div className="flex flex-shrink-0 items-center gap-4 p-1">
-          <DarkMode />
           {!session ? (
             <Button variant="outline" size="sm" asChild>
               <Link href={routes.login}>Login</Link>
@@ -37,6 +45,7 @@ const HeaderDashboard = async () => {
           ) : (
             <SignOutButton />
           )}
+          <DarkMode />
         </div>
       </div>
     </header>
