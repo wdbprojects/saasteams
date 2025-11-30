@@ -1,13 +1,12 @@
-import DarkMode from "@/components/shared/dark-mode";
-import { Button } from "@/components/ui/button";
+import HeroSection from "../components/home/hero-section";
 
 const HomePage = () => {
   return (
-    <div>
-      <h2 className="mb-4 flex items-center justify-between p-3 text-2xl">
-        Welcome to love and abundance
-      </h2>
-      <Button size="lg">Money & Abundance</Button>
+    <div className="">
+      {/* HERO SECTION */}
+      <section className="py-16 md:py-32">
+        <HeroSection />
+      </section>
     </div>
   );
 };

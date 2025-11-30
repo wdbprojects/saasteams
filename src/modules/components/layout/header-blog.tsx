@@ -7,9 +7,10 @@ import Link from "next/link";
 import SignOutButton from "@/modules/components/auth/sign-out-button";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import TopNavigation from "@/modules/components/shared/top-navigation";
 
-const HeaderMain = async () => {
+const HeaderBlog = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -19,6 +20,7 @@ const HeaderMain = async () => {
       <div className="mx-auto flex w-full items-center justify-between gap-1 sm:gap-2">
         {/* //INFO: MENU & LOGO  & NAV LINKS */}
         <div className="flex flex-1 flex-shrink-0 items-center gap-2 p-1">
+          <SidebarTrigger />
           <Link href={routes.home} className="flex flex-row items-center gap-2">
             <Image
               src="/logo.svg"
@@ -64,4 +66,4 @@ const HeaderMain = async () => {
   );
 };
 
-export default HeaderMain;
+export default HeaderBlog;
